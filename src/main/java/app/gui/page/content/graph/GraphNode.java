@@ -3,8 +3,12 @@ package app.gui.page.content.graph;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.font.FontRenderContext;
+import java.awt.geom.Rectangle2D;
 
 import javax.swing.JPanel;
 
@@ -97,26 +101,61 @@ public abstract class GraphNode extends JPanel {
                 Graphics2D g = (Graphics2D)g_;
 
                 // Changement de l'épaisseur du trait.
-                g.setStroke(new BasicStroke(Config.graphNodeStroke));
+                g.setStroke(Config.graphNodeStroke);
 
                 // Entier de décalage pour éviter de toucher le bord.
-                int dec = Config.graphNodeStroke/2;
+                int dec = (int) Config.graphNodeStroke.getLineWidth();
 
                 // Changement de la couleur pour les contours.
                 g.setColor( this.getColor() );
                 // Ajout des contour
                 g.drawOval(dec, dec, this.getWidth()-2*dec, this.getHeight()-2*dec);
 
-                // Affichage du nom du noeud.
+                /* Affichage du nom du noeud. */
+                // Récupération de la police d'écriture.
+                Font font = Config.getFont(Config.nodeFont).deriveFont(Config.nodeFontSize);
+                // Changement de la police d'écriture
+                g.setFont(font);
+
+                // calcul de la taillé nécessaire pour faire l'affichage.
+                FontRenderContext frc = g.getFontRenderContext();
+                Rectangle2D bounds = font.getStringBounds(this.getName(), frc);
                 
+                double xText = (getWidth()  - bounds.getWidth())  / 2;
+                double yBase = (getHeight() - bounds.getHeight()) / 2 - bounds.getY(); // –bounds.y = ascentEffectif
+    
+                g.drawString(this.getName(), (float)xText, (float)yBase);
+                /* g.setStroke(new BasicStroke(2)); */
+                /* g.setColor(Color.RED); */
+                /* g.setStroke(new BasicStroke(2)); */
+                /* g.draw(new Rectangle2D.Double( */
+                /*     xText + bounds.getX(),      // bounds.getX() vaut 0 la plupart du temps */
+                /*     yBase + bounds.getY(),      // yBase - ascentEffectif */
+                /*     bounds.getWidth(), */
+                /*     bounds.getHeight() */
+                /* )); */
 
             }
         };
 
     }
 
+    /**
+     * Sucharge de la fonction {@link GraphNode#createDefaultNode(int, int, String)}.
+     */
     public static GraphNode createDefaultNode( int x, int y ){ return createDefaultNode(x, y, ""+(COUNTER++)); }
+
+    /**
+     * Sucharge de la fonction {@link GraphNode#createDefaultNode(int, int)}.
+     */
     public static GraphNode createDefaultNode( ){ return createDefaultNode(10, 10); }
+
+    @Override
+    public boolean contains(int x, int y ){
+        return 
+            (x >= this.getX() && x<=this.getX()+this.getWidth())
+            && (y >= this.getY() && y<=this.getY()+this.getHeight());
+    }
 
 //////////////////////////////////////////////////
 //#________________  Accesseurs  ______________#//

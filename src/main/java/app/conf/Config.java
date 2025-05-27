@@ -1,5 +1,6 @@
 package app.conf;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -49,7 +50,7 @@ public class Config {
     /**
      * Il s'agit de l'épaisseur du trait par défaut lors du dessin des noeuds.
      */
-    public static int graphNodeStroke = 5;
+    public static BasicStroke graphNodeStroke = new BasicStroke(5);
     
     /**
      * Table de hachage utilisée pour stocker les différentes police d'écriture du projet.
@@ -60,6 +61,17 @@ public class Config {
      * Il s'agit du chemin vers les polices d'écritures.
      */
     public static String fontPath = "src/main/java/res/font";
+
+    /**
+     * Police d'écriture par défaut du texte des étiquettes des noeuds 
+     * dans le graphe.
+     */
+    public static String nodeFont = "Source Sans Pro Semibold";
+    
+    /**
+     * Il s'agit de la taille par défaut des étiquettes des noeuds.
+     */
+    public static float nodeFontSize = 20;
 
 //////////////////////////////////////////////////////////////////////
 //#_________________________  Fonctions  __________________________#//
@@ -104,7 +116,7 @@ public class Config {
      */
     public static void initConfig(){
     
-       // Chargement des polices de couleurs.
+       // Chargement des polices.
        Config_loadFonts();
 
     }    
