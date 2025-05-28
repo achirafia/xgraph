@@ -6,6 +6,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.JPanel;
 
@@ -29,14 +30,23 @@ public class Graph extends JPanel {
         @Override
         public void mousePressed(MouseEvent e){
             
-            // Si la touche CTRL est maintenu on ne retire rien
+            // Récupération du noeud source 
+            GraphNode source = (GraphNode) e.getSource();
+
+            // Si la touche CTRL est maintenue on ne retire rien
             if (Graph.this.keyPressed.contains(32))
                 return;
 
             // Désséléction de tous les autres noeuds (sauf en cas de CTRL)
-            Graph.this.unselecComponents();
-            // Selection du noeud.    
-            Graph.this.selectNode((GraphNode)e.getSource());
+            Graph.this.unselectComponents();
+            // Selection du noeud s'il n'est pas séléctionné.
+
+            if (!Graph.this.selectedNodes.contains(source)) {
+                Graph.this.selectNode(source);
+                System.out.println("Ajouté !");
+            }
+            else { unselectNode(source); System.out.println("Retiré !"); }
+
             Graph.this.repaint();
         }
     };
@@ -49,7 +59,7 @@ public class Graph extends JPanel {
     /**
      * Il s'agit de la liste des noeud qui sont séléctionnés dans l'interface graphique.
      */
-    private ArrayList<GraphNode> selectedNodes = new ArrayList<>();
+    private CopyOnWriteArrayList<GraphNode> selectedNodes = new CopyOnWriteArrayList<>();
 
     /**
      * Il s'agit de la liste des touches actuellement préssées 
@@ -95,15 +105,32 @@ public class Graph extends JPanel {
      * Fonction qui va déséléctionner tous les composants qui sont 
      * actuellement séléctionnés dans l'interface graphique.
      */
-    private void unselecComponents(  ){
+    private void unselectComponents(  ){
         
         // Si la touche CTRL est maintenu on ne retire rien
         if (this.keyPressed.size() == 1 && this.keyPressed.getFirst() == 17)
             return;
 
         // Déséléction des noeuds.
-        selectedNodes.stream().forEach(node -> node.setSelected(false));
-        selectedNodes.clear();
+        selectedNodes.stream().forEach(node -> this.unselectNode(node));
+        assert(this.selectedNodes.isEmpty()); 
+
+    }
+    
+    /**
+     * Fonction qui va déséléctionner le noeud donné en argument.
+     *
+     * @param n Le noeud à déséléctionner.
+     */
+    private void unselectNode( GraphNode n ){
+        
+        // On s'assure que le noeuds est bel et bien dans la liste.
+        assert (this.selectedNodes.contains(n));
+        // Déséléction;
+        n.setSelected(false);
+        assert(this.selectedNodes.remove(n));
+        // On s'assure que le noeuds n'est plus dans la liste.
+        assert (!this.selectedNodes.contains(n));
     
     }
 
@@ -145,7 +172,7 @@ public class Graph extends JPanel {
 
                 lastTime = System.currentTimeMillis(); // Mise à jour du temps/
                 // On déselectionne tous les éléments de l'interface graphique.
-                unselecComponents(); 
+                unselectComponents(); 
                 Graph.this.repaint();
                 
             }

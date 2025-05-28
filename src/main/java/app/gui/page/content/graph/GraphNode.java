@@ -52,6 +52,13 @@ public abstract class GraphNode extends JPanel {
      */
     private boolean selected = false;
     
+    /**
+     * Identifiant du noeud. 
+     *
+     * Chaque noeud créé en a un, il est unique. 
+     */
+    private long ID; 
+
 //////////////////////////////////////////////////////////////////////
 //#________________________  Constructeur  ________________________#//
 //////////////////////////////////////////////////////////////////////
@@ -62,6 +69,9 @@ public abstract class GraphNode extends JPanel {
         // Mise à jour du nom.
         this.name = name;
         
+        // Mise à jour de l'Identifiant.
+        this.ID = GraphNode.COUNTER++; 
+
         // Récupération de la dimension des points de l'interface graphique.
         Dimension pointDim = Config.graphNodeDimension;
         this.setBounds(x-(pointDim.width/2), y-(pointDim.height/2), pointDim.width, pointDim.height );
@@ -71,7 +81,7 @@ public abstract class GraphNode extends JPanel {
     }   
 
     public GraphNode( int x, int y ){
-        this( x, y, ""+(COUNTER++) ); 
+        this( x, y, ""+COUNTER ); 
     }   
 
     public GraphNode(){ this(10,10 ); }
@@ -140,7 +150,7 @@ public abstract class GraphNode extends JPanel {
     /**
      * Sucharge de la fonction {@link GraphNode#createDefaultNode(int, int, String)}.
      */
-    public static GraphNode createDefaultNode( int x, int y ){ return createDefaultNode(x, y, ""+(COUNTER++)); }
+    public static GraphNode createDefaultNode( int x, int y ){ return createDefaultNode(x, y, ""+COUNTER); }
 
     /**
      * Sucharge de la fonction {@link GraphNode#createDefaultNode(int, int)}.
@@ -218,7 +228,11 @@ public abstract class GraphNode extends JPanel {
         return distanceToC <= this.getWidth()/2;
     }
 
-    
+    @Override
+    public boolean equals( Object o ){
+        assert( o instanceof GraphNode );
+        return ((GraphNode)o).ID == this.ID;
+    }
 
 //////////////////////////////////////////////////
 //#________________  Abstraites  ______________#//
