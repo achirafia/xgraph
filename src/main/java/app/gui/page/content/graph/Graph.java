@@ -1,5 +1,6 @@
 package app.gui.page.content.graph;
 
+import java.awt.Cursor;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -27,6 +28,11 @@ public class Graph extends JPanel {
     private MouseAdapter nodeMouseEventListener = new MouseAdapter() {
         @Override
         public void mousePressed(MouseEvent e){
+            
+            // Si la touche CTRL est maintenu on ne retire rien
+            if (Graph.this.keyPressed.contains(32))
+                return;
+
             // Désséléction de tous les autres noeuds (sauf en cas de CTRL)
             Graph.this.unselecComponents();
             // Selection du noeud.    
@@ -56,6 +62,19 @@ public class Graph extends JPanel {
 //////////////////////////////////////////////////////////////////////
 
 
+    public Graph (){
+        super();
+        
+        // Mise en place du panneau.
+        this.init();
+
+    }    
+
+//////////////////////////////////////////////////////////////////////
+//#_________________________  Fonctions  __________________________#//
+//////////////////////////////////////////////////////////////////////
+
+       
     /**
      * Fonction qui ajoute un noeud dans l'interface la liste des 
      * noeuds ainsi que dans l'interface graphique.
@@ -111,6 +130,11 @@ public class Graph extends JPanel {
             long lastTime = 0; ///< Temps écoulé depuis le dernier clique (permet de détecter un double clique. )
             @Override 
             public void mouseClicked( MouseEvent e ){
+                
+                // Si la touche ESPACE a été saisie, alors on ne fait rien tout.
+                if (Graph.this.keyPressed.contains(32))
+                    return;
+
                 if (System.currentTimeMillis() - lastTime < 250){ // Double clique
                     lastTime = System.currentTimeMillis(); // Mise à jour du temps/
                     // Ajout d'un nouveau noeud dans l'interface graphique.
@@ -145,13 +169,26 @@ public class Graph extends JPanel {
             public void keyPressed( KeyEvent e ){
                 // 17 Ctrl
                 // 32 Espace
-                Graph.this.keyPressed.addLast(e.getKeyCode());
+                
+                // Ajout de la touche si elle n'existe pas.
+                if (!Graph.this.keyPressed.contains(e.getKeyCode())) Graph.this.keyPressed.add(e.getKeyCode());
+
+                // Changement du cuseur s'il s'agit de la touche espace.
+                if (e.getKeyCode() == 32)
+                    Graph.this.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+                if (e.getKeyCode() == 80)
+                    Graph.this.keyPressed.stream().forEach(i-> System.out.println("Touche \033[1;31m"+i+"\033[0m"));
+
                 // System.out.println("Touche pressée \033[1;35m`"+e.getKeyCode()+"`\033[0m");
             }
             
             @Override
             public void keyReleased( KeyEvent e ){
                 Graph.this.keyPressed.remove((Integer)e.getKeyCode());
+                // Changement du cuseur s'il s'agit de la touche espace.
+                if (e.getKeyCode() == 32)
+                    Graph.this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             }
 
         } );
@@ -176,19 +213,6 @@ public class Graph extends JPanel {
     }
 
         
-    public Graph (){
-        super();
-        
-        // Mise en place du panneau.
-        this.init();
-
-    }    
-
-//////////////////////////////////////////////////////////////////////
-//#_________________________  Fonctions  __________________________#//
-//////////////////////////////////////////////////////////////////////
-
-       
 
 //////////////////////////////////////////////////
 //#________________  Accesseurs  ______________#//
