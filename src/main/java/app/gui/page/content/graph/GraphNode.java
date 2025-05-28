@@ -1,10 +1,8 @@
 package app.gui.page.content.graph;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.font.FontRenderContext;
@@ -45,6 +43,14 @@ public abstract class GraphNode extends JPanel {
      */
     private Color nodeColor = Config.graphNodeColor; 
 
+    /**
+     * Booléen qui indique si oui ou non le noeud est séléctionné.
+     * 
+     * Le faite que le panneau est oui ou non séléctionné peut avoir
+     * une influense par exemple dans sa façon d'être déssiné.
+     */
+    private boolean selected = false;
+
 //////////////////////////////////////////////////////////////////////
 //#________________________  Constructeur  ________________________#//
 //////////////////////////////////////////////////////////////////////
@@ -57,7 +63,9 @@ public abstract class GraphNode extends JPanel {
         
         // Récupération de la dimension des points de l'interface graphique.
         Dimension pointDim = Config.graphNodeDimension;
-        this.setBounds(x, y, pointDim.width, pointDim.height );
+        this.setBounds(x-(pointDim.width/2), y-(pointDim.height/2), pointDim.width, pointDim.height );
+        // Mise en transparance.
+        this.setOpaque(false);
         
     }   
 
@@ -72,24 +80,6 @@ public abstract class GraphNode extends JPanel {
 //////////////////////////////////////////////////////////////////////
 
 
-    /**
-     * Fonction qui va déssiner le noeud dans l'interface graphique.
-     *
-     * Cette fonction est mise en abstraite pour donner la possibilité de créer 
-     * plusieurs noeuds qui se déssine différament.
-     */
-    public abstract void drawNode (Graphics g);
-
-    @Override
-    public void paintComponent( Graphics g ){
-            
-        super.paintComponent(g);
-
-        // Appel à la fonction de dessin.
-        this. drawNode(g);
-        
-    }
-    
     /**
      * Fonction qui crée et renvoie des noeuds dont la fonction de dessin est la fonction par défaut.
      */
@@ -117,7 +107,7 @@ public abstract class GraphNode extends JPanel {
                 // Changement de la police d'écriture
                 g.setFont(font);
 
-                // calcul de la taillé nécessaire pour faire l'affichage.
+                // calcul de la taille nécessaire pour faire l'affichage.
                 FontRenderContext frc = g.getFontRenderContext();
                 Rectangle2D bounds = font.getStringBounds(this.getName(), frc);
                 
@@ -150,13 +140,6 @@ public abstract class GraphNode extends JPanel {
      */
     public static GraphNode createDefaultNode( ){ return createDefaultNode(10, 10); }
 
-    @Override
-    public boolean contains(int x, int y ){
-        return 
-            (x >= this.getX() && x<=this.getX()+this.getWidth())
-            && (y >= this.getY() && y<=this.getY()+this.getHeight());
-    }
-
 //////////////////////////////////////////////////
 //#________________  Accesseurs  ______________#//
 //////////////////////////////////////////////////
@@ -171,6 +154,22 @@ public abstract class GraphNode extends JPanel {
     }
     
     /**
+     * Fonction qui change l'état de séléction du noeud.
+     *
+     * @param selected Le nouvel état de séléction à mettre dans le panneau.
+     */
+    public void setSelected( boolean selected ){
+        this.selected = selected;
+    }
+
+    /**
+     * Fonction qui renvoie la couleur du noeud.
+     */
+    public Color getColor(){
+        return this.nodeColor;
+    }
+    
+    /**
      * Fonction qui renvoie l'étiquette actuelle du noeud.
      *
      * @return La valeur de l'étiquette du noeud.
@@ -180,20 +179,47 @@ public abstract class GraphNode extends JPanel {
     }
 
     /**
-     * Fonction qui renvoie la couleur du noeud.
+     * Fonction qui renvoie si oui ou non le noeud est séléctionné.
+     *
+     * @return L'état de séléction du noeud.
      */
-    public Color getColor(){
-        return this.nodeColor;
-    }
+    public boolean isSelected(){ return this.selected; }
 
 //////////////////////////////////////////////////
 //#________________   Override   ______________#//
 //////////////////////////////////////////////////
+
+    @Override
+    public void paintComponent( Graphics g ){
+            
+        super.paintComponent(g);
+
+        // Appel à la fonction de dessin.
+        this. drawNode(g);
+        
+    }
+    
+    @Override
+    public boolean contains(int x, int y ){
+        return 
+            (x >= this.getX() && x<=this.getX()+this.getWidth())
+            && (y >= this.getY() && y<=this.getY()+this.getHeight());
+    }
 
     
 
 //////////////////////////////////////////////////
 //#________________  Abstraites  ______________#//
 //////////////////////////////////////////////////
+
+    /**
+     * Fonction qui va déssiner le noeud dans l'interface graphique.
+     *
+     * Cette fonction est mise en abstraite pour donner la possibilité de créer 
+     * plusieurs noeuds qui se déssine différament.
+     */
+    public abstract void drawNode (Graphics g);
+
+
 
 }
