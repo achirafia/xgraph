@@ -58,6 +58,8 @@ public class Config {
      * lorsqu'ils sont survolés.
      */
     public static Color graphNodeHoveredColor = new Color( 255, 30, 30, 100 );
+    
+    public static Color selectionColor = new Color( 250, 186, 47, 100 );
 
     /**
      * Il s'agit de l'épaisseur du trait par défaut lors du dessin des noeuds.

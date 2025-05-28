@@ -230,8 +230,13 @@ public abstract class GraphNode extends JPanel {
 
     @Override
     public boolean equals( Object o ){
-        assert( o instanceof GraphNode );
+        if (!( o instanceof GraphNode )) return false;
         return ((GraphNode)o).ID == this.ID;
+    }
+
+    @Override
+    public String toString(){
+        return "Noeud \033[1;36m`"+this.ID+"`\033[0m";
     }
 
 //////////////////////////////////////////////////
