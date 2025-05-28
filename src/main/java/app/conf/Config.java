@@ -48,6 +48,18 @@ public class Config {
     public static Color graphNodeColor = Color.BLACK;
 
     /**
+     * Il s'agit de couleur par défaut des noeuds de l'interface graphique 
+     * lorsqu'ils sont séléctionnés.
+     */
+    public static Color graphNodeSelectedColor = Color.RED;
+    
+    /**
+     * Il s'agit de couleur par défaut des noeuds de l'interface graphique 
+     * lorsqu'ils sont survolés.
+     */
+    public static Color graphNodeHoveredColor = new Color( 255, 30, 30, 100 );
+
+    /**
      * Il s'agit de l'épaisseur du trait par défaut lors du dessin des noeuds.
      */
     public static BasicStroke graphNodeStroke = new BasicStroke(5);

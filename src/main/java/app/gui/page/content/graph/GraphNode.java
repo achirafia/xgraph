@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
 
@@ -50,7 +51,7 @@ public abstract class GraphNode extends JPanel {
      * une influense par exemple dans sa façon d'être déssiné.
      */
     private boolean selected = false;
-
+    
 //////////////////////////////////////////////////////////////////////
 //#________________________  Constructeur  ________________________#//
 //////////////////////////////////////////////////////////////////////
@@ -90,6 +91,8 @@ public abstract class GraphNode extends JPanel {
             public void drawNode(Graphics g_){
                 Graphics2D g = (Graphics2D)g_;
 
+                // Déssin d'un petit backgroud pour le panneau;
+                
                 // Changement de l'épaisseur du trait.
                 g.setStroke(Config.graphNodeStroke);
 
@@ -97,7 +100,11 @@ public abstract class GraphNode extends JPanel {
                 int dec = (int) Config.graphNodeStroke.getLineWidth();
 
                 // Changement de la couleur pour les contours.
-                g.setColor( this.getColor() );
+                if (isSelected()) 
+                    g.setColor( Config.graphNodeSelectedColor );
+                else 
+                    g.setColor( this.getColor() );
+
                 // Ajout des contour
                 g.drawOval(dec, dec, this.getWidth()-2*dec, this.getHeight()-2*dec);
 
@@ -201,9 +208,14 @@ public abstract class GraphNode extends JPanel {
     
     @Override
     public boolean contains(int x, int y ){
-        return 
-            (x >= this.getX() && x<=this.getX()+this.getWidth())
-            && (y >= this.getY() && y<=this.getY()+this.getHeight());
+
+        // Calcul des coordonnées du centre.
+        int xC =  this.getWidth()/2;
+        int yC = this.getHeight()/2;
+
+        // Disctance au centre.
+        double distanceToC = Point.distance(x, y, xC, yC);
+        return distanceToC <= this.getWidth()/2;
     }
 
     

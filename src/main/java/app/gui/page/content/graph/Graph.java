@@ -26,11 +26,12 @@ public class Graph extends JPanel {
      */
     private MouseAdapter nodeMouseEventListener = new MouseAdapter() {
         @Override
-        public void mouseClicked(MouseEvent e){
+        public void mousePressed(MouseEvent e){
             // Désséléction de tous les autres noeuds (sauf en cas de CTRL)
             Graph.this.unselecComponents();
             // Selection du noeud.    
             Graph.this.selectNode((GraphNode)e.getSource());
+            Graph.this.repaint();
         }
     };
 
@@ -106,7 +107,7 @@ public class Graph extends JPanel {
             long lastTime = 0; ///< Temps écoulé depuis le dernier clique (permet de détecter un double clique. )
             @Override 
             public void mouseClicked( MouseEvent e ){
-                if (System.currentTimeMillis() - lastTime <300){ // Double clique
+                if (System.currentTimeMillis() - lastTime < 250){ // Double clique
                     lastTime = System.currentTimeMillis(); // Mise à jour du temps/
                     // Ajout d'un nouveau noeud dans l'interface graphique.
                     GraphNode node = GraphNode.createDefaultNode(e.getX(), e.getY());
@@ -117,6 +118,7 @@ public class Graph extends JPanel {
                 lastTime = System.currentTimeMillis(); // Mise à jour du temps/
                 // On déselectionne tous les éléments de l'interface graphique.
                 unselecComponents(); 
+                Graph.this.repaint();
                 
             }
         } );
