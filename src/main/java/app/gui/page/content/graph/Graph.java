@@ -77,7 +77,11 @@ public class Graph extends JPanel {
      * actuellement séléctionnés dans l'interface graphique.
      */
     private void unselecComponents(  ){
-            
+        
+        // Si la touche CTRL est maintenu on ne retire rien
+        if (this.keyPressed.size() == 1 && this.keyPressed.getFirst() == 17)
+            return;
+
         // Déséléction des noeuds.
         selectedNodes.stream().forEach(node -> node.setSelected(false));
         selectedNodes.clear();
@@ -130,13 +134,26 @@ public class Graph extends JPanel {
      * clavier dans le panneau.
      */
     private void addKListeners(){
-    
+        
+        // Activation du focus du clavier sur le panneau.
+        this.setFocusable(true);     
+        // demande le focus
+        this.requestFocusInWindow(); 
+
         this.addKeyListener( new KeyAdapter() {
             @Override 
             public void keyPressed( KeyEvent e ){
-                Graph.this.keyPressed.addLast(e.getID());
-                System.out.println("Touche pressée \033[1;35m`"+e.getID()+"`\033[0m");
+                // 17 Ctrl
+                // 32 Espace
+                Graph.this.keyPressed.addLast(e.getKeyCode());
+                // System.out.println("Touche pressée \033[1;35m`"+e.getKeyCode()+"`\033[0m");
             }
+            
+            @Override
+            public void keyReleased( KeyEvent e ){
+                Graph.this.keyPressed.remove((Integer)e.getKeyCode());
+            }
+
         } );
 
     }
