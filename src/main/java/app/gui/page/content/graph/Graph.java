@@ -42,7 +42,7 @@ public class Graph extends JPanel {
                 return;
 
             // Désséléction de tous les autres noeuds (sauf en cas de CTRL)
-            Graph.this.unselectComponents();
+            if (!Graph.this.keyPressed.contains(17)) Graph.this.unselectComponents();
             // Selection du noeud s'il n'est pas séléctionné.
 
             if (!Graph.this.selectedNodes.contains(source)) {
@@ -76,6 +76,11 @@ public class Graph extends JPanel {
      * pour une séléction.
      */
     private int[] selectionCoords = {0 , 0};
+
+    /**
+     * Il s'agit des coordonnées de la souris avant chaque déplacement de l'interface. 
+     */
+    private int[] displacementCoords = {0 , 0};
 
     /**
      * Il s'agit d'une liste qui va contenir les noeuds qui ont été séléctionnés 
@@ -142,10 +147,6 @@ public class Graph extends JPanel {
      */
     private void unselectComponents(  ){
         
-        // Si la touche CTRL est maintenu on ne retire rien
-        if (this.keyPressed.size() == 1 && this.keyPressed.getFirst() == 17)
-            return;
-
         // Déséléction des noeuds.
         selectedNodes.stream().forEach(node -> this.unselectNode(node));
         assert(this.selectedNodes.isEmpty()); 
@@ -181,6 +182,23 @@ public class Graph extends JPanel {
         this.selectedNodes.add(s);
     
       }
+
+    /**
+     * Fonction qui va faire décaler tous les noeuds de l'interface.
+     */
+    private void displacement ( MouseEvent e ){
+        
+        // Translation
+        int dx = e.getX() - this.displacementCoords[0];
+        int dy = e.getY() - this.displacementCoords[1];
+        
+        // Déplacement.
+        this.nodes.stream().forEach(n -> n.setBounds(n.getX() + dx, n.getY() + dy, n.getWidth(), n.getHeight()));
+        this.displacementCoords[0] = e.getX();
+        this.displacementCoords[1] = e.getY();
+
+    }
+
 
     /**
      * Fonction qui va faire la séléction des noeuds à partir de la séléction de la souris.
@@ -262,13 +280,16 @@ public class Graph extends JPanel {
             @Override
             public void mousePressed( MouseEvent e ){
                 // Si la touche ESPACE a été saisie, alors on ne fait rien tout.
-                if (Graph.this.keyPressed.contains(32))
+                if (Graph.this.keyPressed.contains(32)) {
+                    // Mise à jour des coordonnées de la souris pour le déplacement
+                    Graph.this.displacementCoords[0] = e.getX();
+                    Graph.this.displacementCoords[1] = e.getY();
                     return;
+                }
 
                 // Mise à jour des coordonnées de la souris.
                 Graph.this.selectionCoords[0] = e.getX();
                 Graph.this.selectionCoords[1] = e.getY();
-
                 if (!Graph.this.keyPressed.contains(17)) unselectComponents(); 
                 Graph.this.repaint();
             }
@@ -288,12 +309,10 @@ public class Graph extends JPanel {
             public void mouseDragged(MouseEvent e){
                 
                 // Si la touche ESPACE a été saisie, alors on ne fait rien tout.
-                if (Graph.this.keyPressed.contains(32)){ // Décalage.
-                     
-                }
-                else{ // Mode séléction
+                if (Graph.this.keyPressed.contains(32)) // Décalage.
+                     displacement( e );
+                else // Mode séléction
                     selection(e);
-                }
                 Graph.this.repaint();
             }
         } );
