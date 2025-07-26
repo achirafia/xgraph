@@ -18,7 +18,7 @@ import app.conf.Config;
  * 
  * @author Achirafi Amal [ amalachirafi@gmail.com ] [ amal.achirafi@etu.u-paris.fr]
  */
-public abstract class GraphNode extends JPanel {
+public abstract class GraphNode extends JPanel implements GraphElt {
 
 //////////////////////////////////////////////////////////////////////
 //#__________________________  Champs  ____________________________#//

@@ -35,7 +35,7 @@ public class Graph extends JPanel {
         public void mousePressed(MouseEvent e){
             
             // Récupération du noeud source 
-            GraphNode source = (GraphNode) e.getSource();
+            GraphElt source = (GraphElt) e.getSource();
 
             // Si la touche CTRL est maintenue on ne retire rien
             if (Graph.this.keyPressed.contains(32))
@@ -49,7 +49,7 @@ public class Graph extends JPanel {
                 Graph.this.selectNode(source);
                 System.out.println("Ajouté !");
             }
-            else { unselectNode(source); System.out.println("Retiré !"); }
+            else { unselectElt(source); System.out.println("Retiré !"); }
 
             Graph.this.repaint();
         }
@@ -58,12 +58,12 @@ public class Graph extends JPanel {
     /**
      * Il s'agit de la liste des noeud qui sont actuellement présent dans le graphe.
      */
-    private ArrayList<GraphNode> nodes = new ArrayList<>();
+    private ArrayList<GraphElt> nodes = new ArrayList<>();
 
     /**
      * Il s'agit de la liste des noeud qui sont séléctionnés dans l'interface graphique.
      */
-    private CopyOnWriteArrayList<GraphNode> selectedNodes = new CopyOnWriteArrayList<>();
+    private CopyOnWriteArrayList<GraphElt> selectedNodes = new CopyOnWriteArrayList<>();
 
     /**
      * Il s'agit de la liste des touches actuellement préssées 
@@ -90,7 +90,7 @@ public class Graph extends JPanel {
      * déjà séléctionnés au départ (donc qui doivent être déséléctionnés) et les 
      * noeuds qui ont été séléctionnés pendant la nouvelle séléction.
      */
-    private ArrayList<GraphNode> selectionTemp = new ArrayList<>();
+    private ArrayList<GraphElt> selectionTemp = new ArrayList<>();
 
     /**
      * Il s'agit du panneau visuel qui montre la séléction dans l'interface graphique.
@@ -120,6 +120,7 @@ public class Graph extends JPanel {
 
     }    
 
+
 //////////////////////////////////////////////////////////////////////
 //#_________________________  Fonctions  __________________________#//
 //////////////////////////////////////////////////////////////////////
@@ -129,13 +130,13 @@ public class Graph extends JPanel {
      * Fonction qui ajoute un noeud dans l'interface la liste des 
      * noeuds ainsi que dans l'interface graphique.
      */
-    private void addNode(GraphNode node){
+    private void addNode(GraphElt node){
         
         // Ajout d'un gestionnaire d'évènement pour le noeud.
-        node.addMouseListener(this.nodeMouseEventListener);
+        ((JPanel)node).addMouseListener(this.nodeMouseEventListener);
 
         // Ajout du noeud dans l'interface graphique ainsi que dans la liste des noeuds du graphe.
-        Graph.this.add(node, 1);
+        Graph.this.add((JPanel)node, 1);
         Graph.this.nodes.addLast(node);
         Graph.this.repaint(); // Mise à jour de l'interface.
 
@@ -148,7 +149,7 @@ public class Graph extends JPanel {
     private void unselectComponents(  ){
         
         // Déséléction des noeuds.
-        selectedNodes.stream().forEach(node -> this.unselectNode(node));
+        selectedNodes.stream().forEach(node -> this.unselectElt(node));
         assert(this.selectedNodes.isEmpty()); 
 
     }
@@ -158,7 +159,7 @@ public class Graph extends JPanel {
      *
      * @param n Le noeud à déséléctionner.
      */
-    private void unselectNode( GraphNode n ){
+    private void unselectElt( GraphElt n ){
         
         // On s'assure que le noeuds est bel et bien dans la liste.
         assert (this.selectedNodes.contains(n));
@@ -174,7 +175,7 @@ public class Graph extends JPanel {
      * Fonction qui va séléctionner un noeud et va l'ajouter dans la liste des 
      * noeuds séléctionnés.
      */
-    private void selectNode( GraphNode s ){
+    private void selectNode( GraphElt s ){
         
         // Mise à jour de l'état de séléction du noeud;
         s.setSelected(true);
@@ -193,7 +194,10 @@ public class Graph extends JPanel {
         int dy = e.getY() - this.displacementCoords[1];
         
         // Déplacement.
-        this.nodes.stream().forEach(n -> n.setBounds(n.getX() + dx, n.getY() + dy, n.getWidth(), n.getHeight()));
+        this.nodes.stream().forEach(m -> { 
+            JPanel n = (JPanel) m;
+            n.setBounds(n.getX() + dx, n.getY() + dy, n.getWidth(), n.getHeight());
+        });
         this.displacementCoords[0] = e.getX();
         this.displacementCoords[1] = e.getY();
 
@@ -216,31 +220,32 @@ public class Graph extends JPanel {
 
         /* Ajout des noeuds. */
         // Parcours de la liste des noeds.
-        this.nodes.stream().forEach( n -> {
+        this.nodes.stream().forEach( m -> {
+            JPanel n = (JPanel) m;
             if (rectBounds.contains(n.getX() + n.getWidth()/2, n.getY() + n.getHeight()/2)){ // Le noeud est contenu dans la séléction.
                 // Si le noeud est déjà présent dans la liste de séléction.
-                if ( this.selectionTemp.contains(n) ) return; // Si le noeuds est déjà dans la liste de séléction actuelle on ne fait rien du tout.
-                if ( n.isSelected() ) { // S'il était déjà séléctionné avant la séléction, alors on le désélctionne (CTRL maintenue).
+                if ( this.selectionTemp.contains(m) ) return; // Si le noeuds est déjà dans la liste de séléction actuelle on ne fait rien du tout.
+                if ( m.isSelected() ) { // S'il était déjà séléctionné avant la séléction, alors on le désélctionne (CTRL maintenue).
                     assert( this.keyPressed.contains( 17 ) ); // Si 17 n'est pas maintenu alors il y a un problème.
-                    this.unselectNode(n);
-                    this.selectionTemp.addLast(n);
+                    this.unselectElt(m);
+                    this.selectionTemp.addLast(m);
                     return;
                 }
                 // Si on est ici c'est que le noeud doit être séléctionné.
-                this.selectNode(n);
-                this.selectionTemp.addLast(n);
+                this.selectNode(m);
+                this.selectionTemp.addLast(m);
             }
             else{
-                if ( !this.selectionTemp.contains(n) ) return; // Si le noeuds n'est pas dans la liste de séléction actuelle on ne fait rien du tout.
-                if ( !n.isSelected() ) { // Si le noeud est déséléctionné alors, il était déjà séléctionné avant la séléction. (CTRL maintenue)
+                if ( !this.selectionTemp.contains(m) ) return; // Si le noeuds n'est pas dans la liste de séléction actuelle on ne fait rien du tout.
+                if ( !m.isSelected() ) { // Si le noeud est déséléctionné alors, il était déjà séléctionné avant la séléction. (CTRL maintenue)
                     assert( this.keyPressed.contains( 17 ) ); // Si 17 n'est pas maintenu alors il y a un problème.
-                    this.selectNode(n);
-                    this.selectionTemp.remove(n);
+                    this.selectNode(m);
+                    this.selectionTemp.remove(m);
                     return;
                 }
                 // Si on est ici c'est que le noeud doit être déséléctionné.
-                this.unselectNode(n);
-                this.selectionTemp.remove(n);
+                this.unselectElt(m);
+                this.selectionTemp.remove(m);
                  
             }
         }
