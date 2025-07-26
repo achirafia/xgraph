@@ -15,8 +15,13 @@ import javax.swing.JPanel;
 import app.conf.Config;
 
 /**
- * [Documentation ici !]
+ * Cette classe représente un graphe et contient toutes les fonctionnalités de base 
+ * que l'on retrouve dans un graphe.
  * 
+ * La classe permet de représenter visuellement un graphe, ses noeuds ainsi que ses arêtes.
+ * La gestion des éléments du graphe(noeuds et arêtes), telle que la création de noeud, d'arête entre les noeuds,
+ * déplacement, etc, est gérée par le clavier et la souris.
+ *
  * @author Achirafi Amal [ amalachirafi@gmail.com ] [ amal.achirafi@etu.u-paris.fr]
  */
 public class Graph extends JPanel {
@@ -26,44 +31,75 @@ public class Graph extends JPanel {
 //////////////////////////////////////////////////////////////////////
 
     /**
-     * Il s'agit d'un gestionnaire d'évènement qui sera ajouté à chaque noeud qui 
-     * sera inséré dans le graphe et va appeler des fonctions du graphe pour agir 
+     * Il s'agit d'un gestionnaire d'évènement qui sera ajouté à chaque élément graphique (arête, 
+     * noeud, etc) qui sera inséré dans le graphe et va appeler des fonctions du graphe pour agir 
      * en conséquence.
      */
     private MouseAdapter nodeMouseEventListener = new MouseAdapter() {
+
+       /**
+        * Les dernière coordonnées de la souris au moment du clique ou 
+        * du dragg.
+        */
+        int lastMouseCoords[] = new int[2];
+
+
         @Override
         public void mousePressed(MouseEvent e){
             
-            // Récupération du noeud source 
+            // Récupération de la source 
             GraphElt source = (GraphElt) e.getSource();
+            JPanel sourcePan = (JPanel) source;
+
+
+            // Mise à jour des coordonnées de la souris.
+            lastMouseCoords[0] = sourcePan.getX() + e.getX();
+            lastMouseCoords[1] = sourcePan.getY() + e.getY();
+
 
             // Si la touche CTRL est maintenue on ne retire rien
             if (Graph.this.keyPressed.contains(32))
                 return;
 
-            // Désséléction de tous les autres noeuds (sauf en cas de CTRL)
+            // Désséléction de tous les autres éléments (sauf en cas de CTRL)
             if (!Graph.this.keyPressed.contains(17)) Graph.this.unselectComponents();
-            // Selection du noeud s'il n'est pas séléctionné.
+            // Selection de l'élément s'il n'est pas séléctionné.
 
-            if (!Graph.this.selectedNodes.contains(source)) {
-                Graph.this.selectNode(source);
-                System.out.println("Ajouté !");
-            }
-            else { unselectElt(source); System.out.println("Retiré !"); }
-
+            if (!Graph.this.selectedElts.contains(source)) 
+                Graph.this.selectElt(source);
+            else  
+                Graph.this.unselectElt(source); 
+            
             Graph.this.repaint();
+
+        }
+
+        @Override
+        public void mouseDragged( MouseEvent e ){
+
+            // Si l'élément est déséléctionné.
+            if (!((GraphElt)e.getSource()).isSelected())
+                Graph.this.selectElt((GraphElt)e.getSource());
+
+            // Si la touche ESPACE est maintenu.
+            if (Graph.this.keyPressed.contains(32))
+                return;
+
+            // Décalage des éléments séléctionnés.
+            Graph.this.translateSelection(e, lastMouseCoords);
+
         }
     };
 
     /**
-     * Il s'agit de la liste des noeud qui sont actuellement présent dans le graphe.
+     * Il s'agit de la liste des éléments qui sont actuellement présent dans le graphe.
      */
-    private ArrayList<GraphElt> nodes = new ArrayList<>();
+    private ArrayList<GraphElt> elts = new ArrayList<>();
 
     /**
-     * Il s'agit de la liste des noeud qui sont séléctionnés dans l'interface graphique.
+     * Il s'agit de la liste des éléments qui sont séléctionnés dans l'interface graphique.
      */
-    private CopyOnWriteArrayList<GraphElt> selectedNodes = new CopyOnWriteArrayList<>();
+    private CopyOnWriteArrayList<GraphElt> selectedElts = new CopyOnWriteArrayList<>();
 
     /**
      * Il s'agit de la liste des touches actuellement préssées 
@@ -83,7 +119,7 @@ public class Graph extends JPanel {
     private int[] displacementCoords = {0 , 0};
 
     /**
-     * Il s'agit d'une liste qui va contenir les noeuds qui ont été séléctionnés 
+     * Il s'agit d'une liste qui va contenir les éléments qui ont été séléctionnés 
      * par l'utilsiateur avec le rectangle de séléction.
      *
      * Cette liste permet de faire la différence entre les noeuds qui étaient 
@@ -134,10 +170,11 @@ public class Graph extends JPanel {
         
         // Ajout d'un gestionnaire d'évènement pour le noeud.
         ((JPanel)node).addMouseListener(this.nodeMouseEventListener);
+        ((JPanel)node).addMouseMotionListener(this.nodeMouseEventListener);
 
         // Ajout du noeud dans l'interface graphique ainsi que dans la liste des noeuds du graphe.
         Graph.this.add((JPanel)node, 1);
-        Graph.this.nodes.addLast(node);
+        Graph.this.elts.addLast(node);
         Graph.this.repaint(); // Mise à jour de l'interface.
 
     }
@@ -149,8 +186,8 @@ public class Graph extends JPanel {
     private void unselectComponents(  ){
         
         // Déséléction des noeuds.
-        selectedNodes.stream().forEach(node -> this.unselectElt(node));
-        assert(this.selectedNodes.isEmpty()); 
+        selectedElts.stream().forEach(node -> this.unselectElt(node));
+        assert(this.selectedElts.isEmpty()); 
 
     }
     
@@ -162,12 +199,12 @@ public class Graph extends JPanel {
     private void unselectElt( GraphElt n ){
         
         // On s'assure que le noeuds est bel et bien dans la liste.
-        assert (this.selectedNodes.contains(n));
+        assert (this.selectedElts.contains(n));
         // Déséléction;
         n.setSelected(false);
-        assert(this.selectedNodes.remove(n));
+        assert(this.selectedElts.remove(n));
         // On s'assure que le noeuds n'est plus dans la liste.
-        assert (!this.selectedNodes.contains(n));
+        assert (!this.selectedElts.contains(n));
     
     }
 
@@ -175,12 +212,12 @@ public class Graph extends JPanel {
      * Fonction qui va séléctionner un noeud et va l'ajouter dans la liste des 
      * noeuds séléctionnés.
      */
-    private void selectNode( GraphElt s ){
+    private void selectElt( GraphElt s ){
         
         // Mise à jour de l'état de séléction du noeud;
         s.setSelected(true);
         // Ajout du noeud dans la liste des séléctions.
-        this.selectedNodes.add(s);
+        this.selectedElts.add(s);
     
       }
 
@@ -194,12 +231,48 @@ public class Graph extends JPanel {
         int dy = e.getY() - this.displacementCoords[1];
         
         // Déplacement.
-        this.nodes.stream().forEach(m -> { 
+        this.elts.stream().forEach(m -> { 
             JPanel n = (JPanel) m;
             n.setBounds(n.getX() + dx, n.getY() + dy, n.getWidth(), n.getHeight());
         });
         this.displacementCoords[0] = e.getX();
         this.displacementCoords[1] = e.getY();
+
+    }
+
+    /**
+     * Fonction qui décale tous les éléments séléctionnés dans le graphe
+     * 
+     * La fonction va également mettre à jour la denière position de la 
+     * souris, ce qui va permettre de calculer les décalage (d'où le fait 
+     * qu'elle besoin de la référence du tableau en argument).
+     *
+     * @param e L'évènement de la souris (Permet de récupérer les coordonnées 
+     *          actuelles de la souris).
+     * @param lastMouseCoords Les dernières coordonnées de la souris, permet de faire 
+     *                       le calcul des décalages.
+     */
+    private void translateSelection( MouseEvent e, int[] lastMouseCoords ){
+    
+        // Récupération du paneau.
+        JPanel sourcePan = (JPanel) e.getSource();
+
+        // Calcul du vecteur.
+        int dx = (sourcePan.getX() + e.getX()) - lastMouseCoords[0];
+        int dy = (sourcePan.getY() + e.getY()) - lastMouseCoords[1];
+    
+        // Mise à jour des dernière coordonnées de la souris.
+        lastMouseCoords[0] = sourcePan.getX() + e.getX();
+        lastMouseCoords[1] = sourcePan.getY() + e.getY();
+
+    
+
+        // Déplacement.
+        this.selectedElts.stream().forEach(m -> { 
+            JPanel n = (JPanel) m;
+            n.setBounds(n.getX() + dx, n.getY() + dy, n.getWidth(), n.getHeight());
+        });
+
 
     }
 
@@ -220,7 +293,7 @@ public class Graph extends JPanel {
 
         /* Ajout des noeuds. */
         // Parcours de la liste des noeds.
-        this.nodes.stream().forEach( m -> {
+        this.elts.stream().forEach( m -> {
             JPanel n = (JPanel) m;
             if (rectBounds.contains(n.getX() + n.getWidth()/2, n.getY() + n.getHeight()/2)){ // Le noeud est contenu dans la séléction.
                 // Si le noeud est déjà présent dans la liste de séléction.
@@ -232,14 +305,14 @@ public class Graph extends JPanel {
                     return;
                 }
                 // Si on est ici c'est que le noeud doit être séléctionné.
-                this.selectNode(m);
+                this.selectElt(m);
                 this.selectionTemp.addLast(m);
             }
             else{
                 if ( !this.selectionTemp.contains(m) ) return; // Si le noeuds n'est pas dans la liste de séléction actuelle on ne fait rien du tout.
                 if ( !m.isSelected() ) { // Si le noeud est déséléctionné alors, il était déjà séléctionné avant la séléction. (CTRL maintenue)
                     assert( this.keyPressed.contains( 17 ) ); // Si 17 n'est pas maintenu alors il y a un problème.
-                    this.selectNode(m);
+                    this.selectElt(m);
                     this.selectionTemp.remove(m);
                     return;
                 }
@@ -352,9 +425,9 @@ public class Graph extends JPanel {
                     System.out.println("Touches : -----");
                     Graph.this.keyPressed.stream().forEach(i-> System.out.println("Touche \033[1;31m"+i+"\033[0m"));
                     System.out.println("Noeuds : -----");
-                    Graph.this.nodes.stream().forEach(n -> System.out.println(n));
+                    Graph.this.elts.stream().forEach(n -> System.out.println(n));
                     System.out.println("Selection : -----");
-                    Graph.this.selectedNodes.stream().forEach(n -> System.out.println(n));
+                    Graph.this.selectedElts.stream().forEach(n -> System.out.println(n));
                 }
 
                 // System.out.println("Touche pressée \033[1;35m`"+e.getKeyCode()+"`\033[0m");

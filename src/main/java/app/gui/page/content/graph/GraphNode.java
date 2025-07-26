@@ -132,15 +132,6 @@ public abstract class GraphNode extends JPanel implements GraphElt {
                 double yBase = (getHeight() - bounds.getHeight()) / 2 - bounds.getY(); // –bounds.y = ascentEffectif
     
                 g.drawString(this.getName(), (float)xText, (float)yBase);
-                /* g.setStroke(new BasicStroke(2)); */
-                /* g.setColor(Color.RED); */
-                /* g.setStroke(new BasicStroke(2)); */
-                /* g.draw(new Rectangle2D.Double( */
-                /*     xText + bounds.getX(),      // bounds.getX() vaut 0 la plupart du temps */
-                /*     yBase + bounds.getY(),      // yBase - ascentEffectif */
-                /*     bounds.getWidth(), */
-                /*     bounds.getHeight() */
-                /* )); */
 
             }
         };
